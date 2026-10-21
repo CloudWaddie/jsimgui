@@ -60,6 +60,13 @@ function getArguments(function_: FunctionBinding): string {
 			}
 
 			if (arg.type === "const char*") {
+				// The TypeScript side defaults an optional C string (NULL in C++) to "". An empty
+				// std::string's c_str() is a valid non-null pointer, which Dear ImGui reads as a real end
+				// pointer (text_end in AddText, CalcTextSize...) that sits before the text, so nothing is
+				// drawn. Hand it NULL instead, like the C++ default.
+				if (arg.defaultValue === "NULL") {
+					return `${arg.name}.empty() ? nullptr : ${arg.name}.c_str()`;
+				}
 				return `${arg.name}.c_str()`;
 			}
 
