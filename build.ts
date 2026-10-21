@@ -10,9 +10,10 @@ const cfg = {
 	extensions: args.includes("--extensions"),
 	freetype: args.includes("--freetype"),
 	generateData: args.includes("--generate-data"),
+	throwAsserts: args.includes("--throw-asserts"),
 };
 
-const HELP = "Usage: node|bun|deno build.ts [--extensions] [--freetype]\n";
+const HELP = "Usage: node|bun|deno build.ts [--extensions] [--freetype] [--throw-asserts]\n";
 
 if (cfg.help) {
 	stdout.write(HELP);
@@ -91,6 +92,12 @@ const emccConfig = {
 		"-sASSERTIONS=1",
 	],
 };
+
+if (cfg.throwAsserts) {
+	// Failed IM_ASSERTs throw a JS Error instead of aborting the runtime.
+	emccConfig.sources.push("src/imgui/jsimgui_throw_assert.cpp");
+	emccConfig.flags.push(`'-DIMGUI_USER_CONFIG="jsimgui_throw_assert.h"'`);
+}
 
 if (cfg.freetype) {
 	emccConfig.sources.push("third_party/imgui/misc/freetype/imgui_freetype.cpp");
